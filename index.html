@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chá de Bebê da Amélia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Karla:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --marfim: #F7F1E6;
+    --marfim-escuro: #EFE5D3;
+    --rosa-velho: #C98A8F;
+    --rosa-velho-claro: #E7C8C9;
+    --verde-salvia: #8A9A7E;
+    --verde-salvia-escuro: #6C7C61;
+    --dourado: #B8935A;
+    --tinta: #3E332C;
+    --tinta-suave: #6B5D52;
+    --branco-cartao: #FFFDF8;
+  }
+  *{ box-sizing: border-box; }
+  html, body{ margin:0; padding:0; background: var(--marfim); color: var(--tinta); font-family: 'Karla', sans-serif; min-height:100%; }
+  body{
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(184,147,90,0.10), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(138,154,126,0.12), transparent 45%);
+    display:flex; justify-content:center;
+    padding: 32px 16px 64px;
+    padding-top: calc(32px + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  }
+  .page{ width:100%; max-width: 560px; }
+  h1,h2,h3{ font-family:'Fraunces', serif; font-weight:500; margin:0; color: var(--tinta); }
+  .varal-wrap{ width:100%; max-width:520px; margin:0 auto 8px; }
+  .varal-svg{ width:100%; height:auto; display:block; }
+  .cabecalho{ text-align:center; margin-bottom:28px; }
+  .cabecalho .eyebrow{ font-size:13px; letter-spacing:0.04em; color:var(--verde-salvia-escuro); margin-bottom:6px; }
+  .cabecalho h1{ font-size:38px; line-height:1.15; font-style:italic; color:var(--rosa-velho); margin-bottom:8px; }
+  .cabecalho h1 em{ font-style:normal; color:var(--tinta); }
+  .cabecalho p.data{ color:var(--tinta-suave); font-size:15px; }
+  .cartao{
+    background: var(--branco-cartao);
+    border: 1px solid var(--marfim-escuro);
+    border-radius: 18px;
+    padding: 34px 30px;
+    box-shadow: 0 1px 2px rgba(62,51,44,0.04);
+    position: relative;
+  }
+  .cartao::before{
+    content:""; position:absolute; top:10px; left:10px; right:10px; bottom:10px;
+    border:1px solid var(--dourado); border-radius:12px; opacity:0.35; pointer-events:none;
+  }
+  .tela{ display:none; }
+  .tela.ativa{ display:block; }
+  .tela h2{ font-size:26px; margin-bottom:6px; }
+  .tela .subtitulo{ color:var(--tinta-suave); font-size:15px; margin-bottom:26px; line-height:1.5; }
+  label{ display:block; font-size:14px; color:var(--tinta-suave); margin-bottom:8px; }
+  input[type="text"]{
+    width:100%; font-family:'Karla', sans-serif; font-size:17px; padding:13px 16px;
+    border:1.5px solid var(--marfim-escuro); border-radius:10px; background:var(--marfim);
+    color:var(--tinta); outline:none; transition:border-color 0.2s ease;
+  }
+  input[type="text"]:focus{ border-color:var(--rosa-velho); background:var(--branco-cartao); }
+  .erro{ color:#A1494A; font-size:13px; margin-top:8px; min-height:16px; }
+  .botao{
+    margin-top:24px; width:100%; border:none; cursor:pointer; font-family:'Karla', sans-serif;
+    font-weight:600; font-size:16px; padding:14px 20px; border-radius:10px;
+    background:var(--rosa-velho); color:var(--branco-cartao); transition:background 0.2s ease, transform 0.1s ease;
+  }
+  .botao:hover{ background:#B87B80; }
+  .botao:active{ transform:scale(0.99); }
+  .botao:disabled{ background:var(--marfim-escuro); color:var(--tinta-suave); cursor:not-allowed; }
+  .botao.secundario{ background:transparent; border:1.5px solid var(--verde-salvia); color:var(--verde-salvia-escuro); }
+  .botao.secundario:hover{ background:rgba(138,154,126,0.08); }
+  .lista-tamanhos{ display:flex; flex-direction:column; gap:12px; }
+  .opcao-tamanho{
+    display:flex; align-items:center; justify-content:space-between; padding:16px 18px;
+    border:1.5px solid var(--marfim-escuro); border-radius:12px; cursor:pointer; background:var(--marfim);
+    transition:border-color 0.15s ease, background 0.15s ease;
+  }
+  .opcao-tamanho:hover{ border-color:var(--rosa-velho-claro); }
+  .opcao-tamanho.selecionado{ border-color:var(--rosa-velho); background:#FBF3EC; }
+  .opcao-tamanho .nome-tamanho{ font-family:'Fraunces', serif; font-size:20px; font-weight:500; }
+  .opcao-tamanho .desc-tamanho{ font-size:13px; color:var(--tinta-suave); margin-top:2px; }
+  .opcao-tamanho .marca{
+    width:22px; height:22px; border-radius:50%; border:1.5px solid var(--marfim-escuro);
+    flex-shrink:0; display:flex; align-items:center; justify-content:center;
+  }
+  .opcao-tamanho.selecionado .marca{ border-color:var(--rosa-velho); background:var(--rosa-velho); }
+  .opcao-tamanho.selecionado .marca::after{ content:""; width:8px; height:8px; border-radius:50%; background:var(--branco-cartao); }
+  .sem-vagas{ text-align:center; padding:30px 10px; color:var(--tinta-suave); font-size:15px; line-height:1.6; }
+  .carregando{ text-align:center; padding:30px 10px; color:var(--tinta-suave); font-size:15px; }
+  .agradecimento{ text-align:center; }
+  .agradecimento .selo{ width:64px; height:64px; margin:0 auto 18px; border-radius:50%; background:var(--verde-salvia); display:flex; align-items:center; justify-content:center; }
+  .agradecimento .selo svg{ width:30px; height:30px; }
+  .agradecimento h2{ font-size:26px; margin-bottom:10px; }
+  .agradecimento .nome-convidado{ color:var(--rosa-velho); font-style:italic; }
+  .agradecimento p.msg{ color:var(--tinta-suave); font-size:15px; margin-bottom:22px; line-height:1.6; }
+  .caixa-fralda{ background:var(--verde-salvia); color:var(--branco-cartao); border-radius:12px; padding:22px 18px; margin:4px 0 6px; }
+  .caixa-fralda .rotulo{ font-size:12px; letter-spacing:0.06em; opacity:0.85; margin-bottom:6px; }
+  .caixa-fralda .texto-fralda{ font-family:'Fraunces', serif; font-weight:600; text-transform:uppercase; font-size:24px; letter-spacing:0.02em; }
+  .rodape-nota{ margin-top:22px; font-size:13px; color:var(--tinta-suave); }
+  .admin-wrap{ display:none; }
+  .admin-wrap.ativa{ display:block; }
+  .admin-topo{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:22px; flex-wrap:wrap; gap:10px; }
+  .admin-topo h1{ font-size:26px; color:var(--tinta); }
+  .admin-total{ font-family:'Fraunces', serif; font-size:20px; color:var(--verde-salvia-escuro); }
+  .grade-tamanhos{ display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-bottom:26px; }
+  .cartao-tamanho{ background:var(--branco-cartao); border:1px solid var(--marfim-escuro); border-radius:12px; padding:16px; }
+  .cartao-tamanho .rot{ font-family:'Fraunces', serif; font-size:18px; margin-bottom:8px; }
+  .barra-bg{ width:100%; height:6px; background:var(--marfim-escuro); border-radius:4px; overflow:hidden; margin-bottom:6px; }
+  .barra-fill{ height:100%; background:var(--dourado); border-radius:4px; transition:width 0.3s ease; }
+  .cartao-tamanho .cont{ font-size:13px; color:var(--tinta-suave); }
+  .lista-admin-titulo{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .lista-admin-titulo h3{ font-size:18px; }
+  .btn-atualizar{ border:none; cursor:pointer; background:var(--verde-salvia); color:var(--branco-cartao); font-family:'Karla', sans-serif; font-weight:600; font-size:13px; padding:9px 16px; border-radius:8px; }
+  .btn-atualizar:hover{ background:var(--verde-salvia-escuro); }
+  .tabela-confirmados{ background:var(--branco-cartao); border:1px solid var(--marfim-escuro); border-radius:12px; overflow:hidden; }
+  .linha-confirmado{ display:flex; align-items:center; justify-content:space-between; padding:13px 16px; border-bottom:1px solid var(--marfim-escuro); font-size:14px; gap:10px; }
+  .linha-confirmado:last-child{ border-bottom:none; }
+  .linha-confirmado .nome{ font-weight:600; flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .linha-confirmado .item{ color:var(--verde-salvia-escuro); font-weight:600; flex-shrink:0; }
+  .linha-confirmado .hora{ color:var(--tinta-suave); font-size:12px; flex-shrink:0; }
+  .lista-vazia{ padding:30px 16px; text-align:center; color:var(--tinta-suave); font-size:14px; }
+  .rodape-organizador{ text-align:center; margin-top:22px; }
+  .link-organizador{ font-size:12px; color:var(--tinta-suave); cursor:pointer; opacity:0.6; }
+  .form-organizador{ display:none; max-width:280px; margin:14px auto 0; }
+  .form-organizador input{ width:100%; font-family:'Karla', sans-serif; font-size:14px; padding:10px 12px; border:1.5px solid var(--marfim-escuro); border-radius:8px; background:var(--marfim); color:var(--tinta); outline:none; box-sizing:border-box; }
+  .form-organizador button{ margin-top:10px; width:100%; border:none; cursor:pointer; font-family:'Karla', sans-serif; font-weight:600; font-size:13px; padding:9px 14px; border-radius:8px; background:var(--verde-salvia); color:var(--branco-cartao); }
+  @media (max-width:420px){ .cartao{ padding:26px 20px; } .cabecalho h1{ font-size:32px; } .admin-topo{ flex-direction:column; align-items:flex-start; } }
+</style>
+</head>
+<body>
+
+<div class="page" id="pagina-convidado">
+  <div class="varal-wrap">
+    <svg class="varal-svg" viewBox="0 0 520 110" xmlns="http://www.w3.org/2000/svg">
+      <line x1="10" y1="20" x2="510" y2="20" stroke="#B8935A" stroke-width="2"/>
+      <circle cx="10" cy="20" r="4" fill="#B8935A"/>
+      <circle cx="510" cy="20" r="4" fill="#B8935A"/>
+      <g transform="translate(55,20)">
+        <line x1="0" y1="0" x2="0" y2="10" stroke="#8A9A7E" stroke-width="2"/>
+        <path d="M -20 10 Q 0 0 20 10 L 24 55 Q 0 68 -24 55 Z" fill="#E7C8C9"/>
+        <circle cx="-20" cy="10" r="4" fill="#F7F1E6" stroke="#8A9A7E" stroke-width="1.5"/>
+        <circle cx="20" cy="10" r="4" fill="#F7F1E6" stroke="#8A9A7E" stroke-width="1.5"/>
+      </g>
+      <g transform="translate(140,20)">
+        <line x1="0" y1="0" x2="0" y2="8" stroke="#8A9A7E" stroke-width="2"/>
+        <path d="M -10 8 L 10 8 L 10 28 Q 10 40 0 42 Q -10 40 -10 28 Z" fill="#8A9A7E"/>
+        <circle cx="0" cy="8" r="3.5" fill="#F7F1E6" stroke="#8A9A7E" stroke-width="1.5"/>
+      </g>
+      <g transform="translate(225,20)">
+        <line x1="0" y1="0" x2="0" y2="10" stroke="#C98A8F" stroke-width="2"/>
+        <path d="M -22 10 Q 0 2 22 10 L 30 62 Q 0 74 -30 62 Z" fill="#B8935A" fill-opacity="0.25" stroke="#B8935A" stroke-width="1.5"/>
+        <circle cx="-22" cy="10" r="4" fill="#F7F1E6" stroke="#C98A8F" stroke-width="1.5"/>
+        <circle cx="22" cy="10" r="4" fill="#F7F1E6" stroke="#C98A8F" stroke-width="1.5"/>
+      </g>
+      <g transform="translate(310,20)">
+        <line x1="0" y1="0" x2="0" y2="8" stroke="#8A9A7E" stroke-width="2"/>
+        <path d="M -10 8 L 10 8 L 10 28 Q 10 40 0 42 Q -10 40 -10 28 Z" fill="#C98A8F"/>
+        <circle cx="0" cy="8" r="3.5" fill="#F7F1E6" stroke="#C98A8F" stroke-width="1.5"/>
+      </g>
+      <g transform="translate(395,20)">
+        <line x1="0" y1="0" x2="0" y2="10" stroke="#8A9A7E" stroke-width="2"/>
+        <path d="M -20 10 Q 0 0 20 10 L 24 55 Q 0 68 -24 55 Z" fill="#8A9A7E" fill-opacity="0.3" stroke="#8A9A7E" stroke-width="1.5"/>
+        <circle cx="-20" cy="10" r="4" fill="#F7F1E6" stroke="#8A9A7E" stroke-width="1.5"/>
+        <circle cx="20" cy="10" r="4" fill="#F7F1E6" stroke="#8A9A7E" stroke-width="1.5"/>
+      </g>
+      <g transform="translate(465,20)">
+        <line x1="0" y1="0" x2="0" y2="8" stroke="#B8935A" stroke-width="2"/>
+        <path d="M -14 8 Q 0 -8 14 8 Z" fill="#C98A8F" fill-opacity="0.35" stroke="#C98A8F" stroke-width="1.5"/>
+        <circle cx="0" cy="-6" r="3" fill="#C98A8F"/>
+      </g>
+    </svg>
+  </div>
+
+  <div class="cabecalho">
+    <div class="eyebrow">Confirmação de presença</div>
+    <h1>Chá de bebê <em>da Amélia</em></h1>
+    <p class="data">17 de outubro de 2026</p>
+  </div>
+
+  <div class="cartao">
+
+    <div id="tela-1" class="tela ativa">
+      <h2>Qual é o seu nome?</h2>
+      <p class="subtitulo">Assim conseguimos confirmar sua presença certinha na nossa lista.</p>
+      <label for="input-nome">Nome completo</label>
+      <input type="text" id="input-nome" placeholder="Digite seu nome" autocomplete="name">
+      <div class="erro" id="erro-nome"></div>
+      <button class="botao" id="btn-avancar-nome">Continuar</button>
+    </div>
+
+    <div id="tela-2" class="tela">
+      <h2>Escolha uma fralda para levar</h2>
+      <p class="subtitulo">Selecione um tamanho entre os que ainda estão disponíveis.</p>
+      <div class="lista-tamanhos" id="lista-tamanhos">
+        <div class="carregando">Carregando vagas disponíveis...</div>
+      </div>
+      <div class="erro" id="erro-tamanho"></div>
+      <button class="botao" id="btn-confirmar" disabled>Confirmar presença</button>
+    </div>
+
+    <div id="tela-3" class="tela">
+      <div class="agradecimento">
+        <div class="selo">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 12.5L9.5 18L20 6" stroke="#FFFDF8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h2>Obrigada, <span class="nome-convidado" id="nome-final"></span>!</h2>
+        <p class="msg">Sua presença está confirmada para o chá de bebê da Amélia.<br>Não esqueça de trazer:</p>
+        <div class="caixa-fralda">
+          <div class="rotulo">Item combinado</div>
+          <div class="texto-fralda" id="texto-fralda"></div>
+        </div>
+        <p class="rodape-nota">Até o dia 17 de outubro! 💛</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="rodape-organizador">
+    <span class="link-organizador" id="link-organizador">Área do organizador</span>
+    <div class="form-organizador" id="form-organizador">
+      <input type="password" id="input-senha-admin" placeholder="Senha do organizador">
+      <div class="erro" id="erro-senha-admin"></div>
+      <button id="btn-entrar-admin">Entrar</button>
+    </div>
+  </div>
+</div>
+
+<div class="page admin-wrap" id="pagina-admin">
+  <div class="cabecalho">
+    <div class="eyebrow">Painel privado</div>
+    <h1 style="font-size:32px;">Chá de bebê <em style="font-style:italic;color:var(--rosa-velho);">da Amélia</em></h1>
+    <p class="data">17 de outubro de 2026</p>
+  </div>
+
+  <div class="cartao" style="padding:28px 24px;">
+    <div id="admin-carregando" class="carregando">Carregando dados...</div>
+    <div id="admin-conteudo" style="display:none;">
+      <div class="admin-topo">
+        <h1>Confirmações</h1>
+        <div class="admin-total" id="admin-total">0 de 40</div>
+      </div>
+      <div class="grade-tamanhos" id="grade-tamanhos"></div>
+      <div class="lista-admin-titulo">
+        <h3>Lista de convidados</h3>
+        <button class="btn-atualizar" id="btn-atualizar">Atualizar</button>
+      </div>
+      <div class="tabela-confirmados" id="tabela-confirmados"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var LIMITES = { RN: 3, P: 12, M: 15, G: 10 };
+  var TOTAL_VAGAS = 40;
+  var ORDEM_TAMANHOS = ["RN", "P", "M", "G"];
+  var SENHA_ORGANIZADOR = "amelia2026";
+  var CHAVE_LOCAL_RESPOSTA = "minha-resposta-cha-amelia";
+  var URL_API = "/.netlify/functions/estado";
+
+  var ehAdmin = window.location.search.indexOf("admin") !== -1;
+
+  var tamanhoSelecionado = null;
+  var nomeConvidado = "";
+
+  var rotulosTamanho = { RN: "Recém-nascido", P: "Pequeno", M: "Médio", G: "Grande" };
+
+  function escapeHtml(str){
+    var div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function formatarHora(iso){
+    try{
+      var d = new Date(iso);
+      return d.toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+    }catch(e){ return ""; }
+  }
+
+  async function buscarEstado(){
+    var resp = await fetch(URL_API, { method: "GET" });
+    var dados = await resp.json();
+    if(!dados || !dados.ok || !dados.estado){
+      throw new Error("estado_invalido");
+    }
+    return dados.estado;
+  }
+
+  async function enviarConfirmacao(nome, tamanho){
+    var resp = await fetch(URL_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nome: nome, tamanho: tamanho })
+    });
+    return resp.json();
+  }
+
+  function lerMinhaResposta(){
+    try{
+      var raw = localStorage.getItem(CHAVE_LOCAL_RESPOSTA);
+      if(raw){ return JSON.parse(raw); }
+    }catch(e){}
+    return null;
+  }
+
+  function salvarMinhaResposta(dados){
+    try{ localStorage.setItem(CHAVE_LOCAL_RESPOSTA, JSON.stringify(dados)); }catch(e){}
+  }
+
+  // ================= FLUXO CONVIDADO =================
+
+  function mostrarTela(id){
+    document.querySelectorAll("#pagina-convidado .tela").forEach(function(t){ t.classList.remove("ativa"); });
+    document.getElementById(id).classList.add("ativa");
+  }
+
+  function mostrarAgradecimento(nome, item){
+    document.getElementById("nome-final").textContent = nome;
+    document.getElementById("texto-fralda").textContent = "LEVAR FRALDA " + item;
+    mostrarTela("tela-3");
+  }
+
+  function iniciarConvidado(){
+    var resposta = lerMinhaResposta();
+    if(resposta && resposta.nome && resposta.item){
+      mostrarAgradecimento(resposta.nome, resposta.item);
+      return;
+    }
+    mostrarTela("tela-1");
+    document.getElementById("input-nome").focus();
+  }
+
+  document.getElementById("btn-avancar-nome").addEventListener("click", function(){
+    var val = document.getElementById("input-nome").value.trim();
+    var erro = document.getElementById("erro-nome");
+    if(val.length < 2){
+      erro.textContent = "Por favor, digite seu nome.";
+      return;
+    }
+    erro.textContent = "";
+    nomeConvidado = val;
+    carregarTelaTamanhos();
+  });
+
+  document.getElementById("input-nome").addEventListener("keydown", function(e){
+    if(e.key === "Enter"){ document.getElementById("btn-avancar-nome").click(); }
+  });
+
+  async function carregarTelaTamanhos(){
+    mostrarTela("tela-2");
+    var lista = document.getElementById("lista-tamanhos");
+    var btn = document.getElementById("btn-confirmar");
+    var erro = document.getElementById("erro-tamanho");
+    lista.innerHTML = '<div class="carregando">Carregando tamanhos...</div>';
+    btn.disabled = true;
+    btn.textContent = "Confirmar presença";
+    erro.textContent = "";
+    tamanhoSelecionado = null;
+
+    var estado;
+    try{
+      estado = await buscarEstado();
+    }catch(e){
+      lista.innerHTML = '<div class="sem-vagas">Não foi possível carregar os tamanhos agora.<br><br>' +
+        '<button class="botao secundario" id="btn-retry-tamanhos" style="margin-top:10px;width:auto;padding:10px 18px;">Tentar novamente</button></div>';
+      document.getElementById("btn-retry-tamanhos").addEventListener("click", carregarTelaTamanhos);
+      return;
+    }
+
+    var disponiveis = ORDEM_TAMANHOS.filter(function(t){ return estado.contagem[t] < LIMITES[t]; });
+
+    if(disponiveis.length === 0){
+      lista.innerHTML = '<div class="sem-vagas">Ah, não! Todas as vagas de fraldas já foram preenchidas. Muito obrigada por querer participar — sua presença já é um presente! 💛</div>';
+      return;
+    }
+
+    lista.innerHTML = "";
+    disponiveis.forEach(function(t){
+      var opcao = document.createElement("div");
+      opcao.className = "opcao-tamanho";
+      opcao.setAttribute("data-tamanho", t);
+      opcao.innerHTML =
+        '<div><div class="nome-tamanho">' + t + '</div><div class="desc-tamanho">' + rotulosTamanho[t] + '</div></div>' +
+        '<div class="marca"></div>';
+      opcao.addEventListener("click", function(){
+        document.querySelectorAll(".opcao-tamanho").forEach(function(el){ el.classList.remove("selecionado"); });
+        opcao.classList.add("selecionado");
+        tamanhoSelecionado = t;
+        btn.disabled = false;
+        erro.textContent = "";
+      });
+      lista.appendChild(opcao);
+    });
+  }
+
+  document.getElementById("btn-confirmar").addEventListener("click", async function(){
+    var btn = this;
+    var erro = document.getElementById("erro-tamanho");
+    if(!tamanhoSelecionado){
+      erro.textContent = "Escolha um tamanho para continuar.";
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = "Confirmando...";
+    erro.textContent = "";
+
+    try{
+      var dados = await enviarConfirmacao(nomeConvidado, tamanhoSelecionado);
+
+      if(!dados.ok){
+        if(dados.erro === "esgotado"){
+          erro.textContent = "Ops, esse tamanho acabou de esgotar. Escolha outro.";
+          btn.textContent = "Confirmar presença";
+          carregarTelaTamanhos();
+          return;
+        }
+        erro.textContent = "Não foi possível confirmar agora. Tente novamente.";
+        btn.textContent = "Confirmar presença";
+        btn.disabled = false;
+        return;
+      }
+
+      salvarMinhaResposta({ nome: nomeConvidado, item: tamanhoSelecionado });
+      mostrarAgradecimento(nomeConvidado, tamanhoSelecionado);
+    }catch(e){
+      erro.textContent = "Não foi possível confirmar agora. Verifique sua internet e tente de novo.";
+      btn.textContent = "Confirmar presença";
+      btn.disabled = false;
+    }
+  });
+
+  // ================= PAINEL ADMIN =================
+
+  async function carregarAdmin(){
+    var elCarregando = document.getElementById("admin-carregando");
+    var elConteudo = document.getElementById("admin-conteudo");
+    elCarregando.style.display = "block";
+    elCarregando.textContent = "Carregando dados...";
+    elConteudo.style.display = "none";
+
+    var estado;
+    try{
+      estado = await buscarEstado();
+    }catch(e){
+      elCarregando.innerHTML = 'Não foi possível carregar os dados agora.<br><br>' +
+        '<button class="btn-atualizar" id="btn-tentar-admin">Tentar novamente</button>';
+      document.getElementById("btn-tentar-admin").addEventListener("click", carregarAdmin);
+      return;
+    }
+
+    var contagem = estado.contagem;
+    var confirmados = estado.confirmados;
+
+    var totalConfirmado = ORDEM_TAMANHOS.reduce(function(soma, t){ return soma + (contagem[t] || 0); }, 0);
+    document.getElementById("admin-total").textContent = totalConfirmado + " de " + TOTAL_VAGAS;
+
+    var grade = document.getElementById("grade-tamanhos");
+    grade.innerHTML = "";
+    ORDEM_TAMANHOS.forEach(function(t){
+      var usado = contagem[t] || 0;
+      var limite = LIMITES[t];
+      var pct = limite > 0 ? Math.min(100, (usado/limite)*100) : 0;
+      var card = document.createElement("div");
+      card.className = "cartao-tamanho";
+      card.innerHTML =
+        '<div class="rot">' + t + '</div>' +
+        '<div class="barra-bg"><div class="barra-fill" style="width:' + pct + '%"></div></div>' +
+        '<div class="cont">' + usado + ' de ' + limite + ' usadas</div>';
+      grade.appendChild(card);
+    });
+
+    var tabela = document.getElementById("tabela-confirmados");
+    if(confirmados.length === 0){
+      tabela.innerHTML = '<div class="lista-vazia">Nenhuma confirmação ainda.</div>';
+    }else{
+      var ordenados = confirmados.slice().sort(function(a,b){ return new Date(b.horario) - new Date(a.horario); });
+      tabela.innerHTML = ordenados.map(function(c){
+        return '<div class="linha-confirmado">' +
+          '<span class="nome">' + escapeHtml(c.nome) + '</span>' +
+          '<span class="item">' + escapeHtml(c.item) + '</span>' +
+          '<span class="hora">' + formatarHora(c.horario) + '</span>' +
+        '</div>';
+      }).join("");
+    }
+
+    elCarregando.style.display = "none";
+    elConteudo.style.display = "block";
+  }
+
+  // ================= INICIALIZAÇÃO =================
+
+  function ativarAdmin(){
+    document.getElementById("pagina-convidado").style.display = "none";
+    document.getElementById("pagina-admin").style.display = "";
+    document.getElementById("pagina-admin").classList.add("ativa");
+    carregarAdmin();
+  }
+
+  document.getElementById("btn-atualizar").addEventListener("click", carregarAdmin);
+
+  var linkOrganizador = document.getElementById("link-organizador");
+  var formOrganizador = document.getElementById("form-organizador");
+  var inputSenhaAdmin = document.getElementById("input-senha-admin");
+  var erroSenhaAdmin = document.getElementById("erro-senha-admin");
+  var btnEntrarAdmin = document.getElementById("btn-entrar-admin");
+
+  linkOrganizador.addEventListener("click", function(){
+    var visivel = formOrganizador.style.display !== "none";
+    formOrganizador.style.display = visivel ? "none" : "block";
+    if(!visivel){
+      inputSenhaAdmin.value = "";
+      erroSenhaAdmin.textContent = "";
+      inputSenhaAdmin.focus();
+    }
+  });
+
+  function tentarEntrarAdmin(){
+    var senha = inputSenhaAdmin.value.trim();
+    if(senha === SENHA_ORGANIZADOR){
+      ativarAdmin();
+    }else{
+      erroSenhaAdmin.textContent = "Senha incorreta.";
+    }
+  }
+
+  btnEntrarAdmin.addEventListener("click", tentarEntrarAdmin);
+  inputSenhaAdmin.addEventListener("keydown", function(e){
+    if(e.key === "Enter"){ tentarEntrarAdmin(); }
+  });
+
+  if(ehAdmin){
+    ativarAdmin();
+  }else{
+    document.getElementById("pagina-admin").style.display = "none";
+    iniciarConvidado();
+  }
+
+})();
+</script>
+
+</body>
+</html>
