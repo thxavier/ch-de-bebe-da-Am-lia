@@ -3,8 +3,20 @@ const { getStore } = require("@netlify/blobs");
 const LIMITES = { RN: 3, P: 12, M: 15, G: 10 };
 const TAMANHOS = Object.keys(LIMITES);
 
+function obterStore() {
+  const siteID = process.env.BLOBS_SITE_ID;
+  const token = process.env.BLOBS_TOKEN;
+
+  if (siteID && token) {
+    return getStore({ name: "cha-amelia", siteID: siteID, token: token });
+  }
+
+  // Fallback: deixa a biblioteca tentar detectar o ambiente sozinha
+  return getStore("cha-amelia");
+}
+
 exports.handler = async (event) => {
-  const store = getStore("cha-amelia");
+  const store = obterStore();
 
   if (event.httpMethod === "GET") {
     const estado = await obterEstado(store);
